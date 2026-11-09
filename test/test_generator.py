@@ -24,3 +24,19 @@ def test_generate_transactions_invalid_count(count):
     """Invalid transaction counts should raise ValueError."""
     with pytest.raises(ValueError):
         generate_transactions(count=count)
+
+def test_high_amount_transactions_are_labeled_fraud():
+    """High-amount synthetic transactions should receive a fraud label."""
+    transactions = generate_transactions(count=100, seed=42)
+
+    high_amount_transactions = [
+        transaction
+        for transaction in transactions
+        if transaction["amount"] > 8000.0
+    ]
+
+    assert high_amount_transactions, "Expected at least one high-amount transaction."
+    assert all(
+        transaction["is_fraud"] == 1
+        for transaction in high_amount_transactions
+    )

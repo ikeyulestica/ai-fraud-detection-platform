@@ -4,7 +4,10 @@ import random
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid5
 
-from fraud_detection.data.fraud_scenarios import is_high_amount_transaction
+from fraud_detection.data.fraud_scenarios import (
+    is_high_amount_transaction,
+    is_unusual_transaction_time,
+)
 
 MERCHANT_CATEGORIES = (
     "groceries",
@@ -31,7 +34,10 @@ def generate_transactions(count: int = 1000, seed: int = 42) -> list[dict]:
         amount = round(rng.uniform(1.0, 10000.0), 2)
         category = rng.choice(MERCHANT_CATEGORIES)
         timestamp = start_time + timedelta(minutes=index * 5)
-        is_fraud = int(is_high_amount_transaction(amount))
+        is_fraud = int(
+            is_high_amount_transaction(amount)
+            or is_unusual_transaction_time(timestamp.hour)
+        )
 
         transaction = {
             "transaction_id": str(uuid5(TRANSACTION_NAMESPACE, f"{seed}-{index}")),

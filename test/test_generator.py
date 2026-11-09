@@ -1,5 +1,7 @@
 """Unit tests for synthetic banking transaction generation."""
 
+from datetime import datetime
+
 import pytest
 
 from fraud_detection.data.generator import generate_transactions
@@ -39,4 +41,21 @@ def test_high_amount_transactions_are_labeled_fraud():
     assert all(
         transaction["is_fraud"] == 1
         for transaction in high_amount_transactions
+    )
+
+
+def test_unusual_time_transactions_are_labeled_fraud():
+    """Transactions generated during unusual hours should receive a fraud label."""
+    transactions = generate_transactions(count=100, seed=42)
+
+    unusual_time_transactions = [
+        transaction
+        for transaction in transactions
+        if 0 <= datetime.fromisoformat(transaction["timestamp"]).hour < 5
+    ]
+
+    assert unusual_time_transactions, "Expected at least one unusual-time transaction."
+    assert all(
+        transaction["is_fraud"] == 1
+        for transaction in unusual_time_transactions
     )
